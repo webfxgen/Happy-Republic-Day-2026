@@ -126,11 +126,13 @@
             box-shadow: 
                 0 20px 50px rgba(0,0,0,0.5), 
                 inset 0 0 0 1px rgba(255,255,255,0.1);
-            text-align: center; pointer-events: auto;
+            text-align: center; 
+            pointer-events: auto !important; /* CRITICAL FIX */
             width: min(380px, 90vw);
             transform-style: preserve-3d;
             transition: transform 0.1s ease-out;
             animation: cardEntrance 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 40; /* Raised z-index */
         }
         @keyframes cardEntrance { from { opacity: 0; transform: translateY(50px) rotateX(10deg); } to { opacity: 1; transform: translateY(0) rotateX(0); } }
 
@@ -145,15 +147,18 @@
             filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
         }
 
+        /* INTRO TEXT - FIX: Added pointer-events: none */
         .intro-text {
             font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 10vw, 5rem);
             color: #fff; text-align: center; position: absolute;
             top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; width: 100%; z-index: 60;
             text-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            pointer-events: none; /* CRITICAL FIX */
         }
         .intro-sub {
             font-family: 'Manrope', sans-serif; font-size: clamp(1rem, 4vw, 2rem);
             color: var(--saffron); display: block; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 4px; font-weight: 300;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
         /* --- Envelope Styles --- */
@@ -282,7 +287,7 @@
         .btn-premium, .control-btn, .share-btn-opt {
             position: relative;
             color: #fff;
-            background-color: transparent; 
+            background-color: transparent; /* Inner background is handled by background-image trick */
             border: 2px solid transparent !important;
             border-radius: 50px;
             /* Layer 1: Inner background (dark semi-transparent), Layer 2: Gradient Border */
@@ -306,6 +311,7 @@
             justify-content: center;
             gap: 8px;
             z-index: 50; 
+            pointer-events: auto; /* Force clickable */
         }
 
         /* Hover States for Buttons - Re-apply gradient to ensure it isn't overwritten by background-color shorthand */
@@ -351,6 +357,7 @@
             width: 100%; border: none; border-bottom: 2px solid rgba(255,255,255,0.2); background: transparent; color: #fff;
             padding: 15px; font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 400;
             outline: none; text-align: center; margin-bottom: 20px; transition: all 0.3s;
+            pointer-events: auto; /* Force clickable */
         }
         .interactive-input:focus { border-bottom-color: var(--saffron); background: rgba(255,255,255,0.05); }
         .interactive-input::placeholder { color: rgba(255,255,255,0.3); font-family: 'Manrope'; font-size: 1rem; letter-spacing: 1px; }
@@ -383,7 +390,8 @@
             color: #fff; text-shadow: 0 5px 15px rgba(0,0,0,0.8); margin-top: 10px;
         }
 
-        .controls { position: absolute; bottom: 80px; right: 0; left: 0; display: flex; justify-content: center; gap: 15px; z-index: 30; }
+        .controls { position: absolute; bottom: 80px; right: 0; left: 0; display: flex; justify-content: center; gap: 15px; z-index: 30; pointer-events: none; }
+        .controls .control-btn { pointer-events: auto; }
         
         .footer-credit { position: fixed; bottom: 20px; width: 100%; text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.4); z-index: 50; pointer-events: auto; }
         .footer-credit a { color: var(--saffron); text-decoration: none; font-weight: 700; transition: color 0.3s; }
@@ -402,12 +410,59 @@
         .animate-pop-in { animation: popIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* Razorpay Widget Container - Ensures visibility */
+        /* Razorpay Widget Container - Ko-fi Style Floating Button */
         .razorpay-widget-wrap {
             position: fixed;
             bottom: 20px;
-            right: 20px;
-            z-index: 9999; /* Max Z-Index */
+            left: 20px;
+            z-index: 9999;
+            pointer-events: auto;
+            background: #fff;
+            padding: 8px 16px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid #FF9933; /* Saffron border */
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .razorpay-widget-wrap:hover {
+            transform: translateY(-2px);
+        }
+
+        .support-icon {
+            font-size: 1.2rem;
+            animation: heartbeat 1.5s infinite;
+        }
+
+        .support-text {
+            color: #333;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        /* Razorpay Button CSS Force */
+        .razorpay-payment-button {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            opacity: 0 !important;
+            cursor: pointer !important;
+            z-index: 10 !important;
+            display: block !important;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            10% { transform: scale(1.2); }
+            20% { transform: scale(1); }
+            30% { transform: scale(1.2); }
+            40% { transform: scale(1); }
         }
 
     </style>
@@ -431,6 +486,18 @@
     <div id="kite-layer"></div>
     <div id="floating-layer"></div>
     <div class="bg-text-layer" id="bg-text">26 JAN</div>
+
+    <!-- Razorpay Payment Button (Floating Ko-fi Style) -->
+    <div class="razorpay-widget-wrap">
+        <span class="support-icon">❤️</span>
+        <span class="support-text">Support My Work</span>
+        <!-- Invisible form wrapper that ensures the button takes space -->
+        <div style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; overflow: hidden;">
+            <form>
+                <script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_S07W9Vu2vLR9vn" async> </script> 
+            </form>
+        </div>
+    </div>
 
     <div id="ui-layer">
         
@@ -518,11 +585,6 @@
 
     <div class="footer-credit">
         Made with <span style="color:red;">❤️</span> by <a href="https://www.webfxgen.in/" target="_blank">WebFXGen</a>
-    </div>
-
-    <!-- Razorpay Payment Button -->
-    <div class="razorpay-widget-wrap">
-        <form><script src="https://checkout.razorpay.com/v1/payment-button.js" data-payment_button_id="pl_S07W9Vu2vLR9vn" async> </script> </form>
     </div>
 
     <script>
